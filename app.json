@@ -52,7 +52,8 @@
         {
           "locationWhenInUsePermission": "Приложению нужен доступ к геолокации, чтобы показать магазины ПолЦены Маркет рядом с вами."
         }
-      ]
+      ],
+      "expo-image"
     ],
     "experiments": {
       "typedRoutes": true

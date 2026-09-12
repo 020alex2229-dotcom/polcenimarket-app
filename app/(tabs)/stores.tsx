@@ -9,9 +9,10 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
 import { Ionicons } from '@expo/vector-icons';
-import { Brand } from '@/constants/Colors';
+import { Brand, shadow } from '@/constants/Colors';
 import { STORES } from '@/src/data/stores';
 import { StoreCard } from '@/src/components/StoreCard';
 import { haversineKm } from '@/src/utils/geo';
@@ -19,6 +20,7 @@ import { haversineKm } from '@/src/utils/geo';
 const CITIES = Array.from(new Set(STORES.map((s) => s.city)));
 
 export default function StoresScreen() {
+  const insets = useSafeAreaInsets();
   const [query, setQuery] = useState('');
   const [city, setCity] = useState<string | null>(null);
   const [coords, setCoords] = useState<{ lat: number; lon: number } | null>(null);
@@ -81,7 +83,7 @@ export default function StoresScreen() {
   return (
     <View style={styles.screen}>
       <View style={styles.toolbar}>
-        <View style={styles.searchBox}>
+        <View style={[styles.searchBox, shadow.soft]}>
           <Ionicons name="search" size={18} color={Brand.muted} />
           <TextInput
             style={styles.input}
@@ -97,20 +99,9 @@ export default function StoresScreen() {
           ) : null}
         </View>
 
-        <Pressable style={styles.nearBtn} onPress={findNearby} disabled={locating}>
-          {locating ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <>
-              <Ionicons name="navigate" size={16} color="#fff" />
-              <Text style={styles.nearText}>Рядом со мной</Text>
-            </>
-          )}
-        </Pressable>
-
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
           <Pressable
-            style={[styles.chip, !city && styles.chipActive]}
+            style={[styles.chip, !city && styles.chipActive, shadow.soft]}
             onPress={() => setCity(null)}
           >
             <Text style={[styles.chipText, !city && styles.chipTextActive]}>Все</Text>
@@ -118,7 +109,7 @@ export default function StoresScreen() {
           {CITIES.map((c) => (
             <Pressable
               key={c}
-              style={[styles.chip, city === c && styles.chipActive]}
+              style={[styles.chip, city === c && styles.chipActive, shadow.soft]}
               onPress={() => setCity(city === c ? null : c)}
             >
               <Text style={[styles.chipText, city === c && styles.chipTextActive]}>{c}</Text>
@@ -130,7 +121,7 @@ export default function StoresScreen() {
         ) : null}
       </View>
 
-      <ScrollView contentContainerStyle={styles.list}>
+      <ScrollView contentContainerStyle={[styles.list, { paddingBottom: 88 + insets.bottom }]}>
         {filtered.length === 0 ? (
           <Text style={styles.empty}>
             Ничего не нашли. Попробуйте другой город или сбросьте фильтр.
@@ -147,41 +138,64 @@ export default function StoresScreen() {
           ))
         )}
       </ScrollView>
+
+      <View style={[styles.nearDock, { paddingBottom: Math.max(12, insets.bottom + 8) }]}>
+        <Pressable
+          style={[styles.nearBtn, shadow.glowAmber]}
+          onPress={findNearby}
+          disabled={locating}
+        >
+          {locating ? (
+            <ActivityIndicator color={Brand.amberInk} />
+          ) : (
+            <>
+              <Ionicons name="navigate" size={18} color={Brand.amberInk} />
+              <Text style={styles.nearText}>Рядом со мной</Text>
+            </>
+          )}
+        </Pressable>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: Brand.cream },
-  toolbar: { paddingHorizontal: 16, paddingTop: 8, gap: 10 },
+  toolbar: { paddingHorizontal: 16, paddingTop: 8, gap: 12 },
   searchBox: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
     backgroundColor: Brand.card,
-    borderRadius: 12,
+    borderRadius: Brand.radius,
     borderWidth: 1,
     borderColor: Brand.line,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
   },
   input: { flex: 1, color: Brand.ink, fontSize: 15, padding: 0 },
+  nearDock: {
+    position: 'absolute',
+    left: 16,
+    right: 16,
+    bottom: 0,
+  },
   nearBtn: {
-    backgroundColor: Brand.blue,
-    borderRadius: 12,
-    paddingVertical: 12,
+    backgroundColor: Brand.amber,
+    borderRadius: Brand.radius,
+    paddingVertical: 15,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
   },
-  nearText: { color: '#fff', fontWeight: '800' },
-  chips: { gap: 8, paddingVertical: 2 },
+  nearText: { color: Brand.amberInk, fontWeight: '800', fontSize: 16 },
+  chips: { gap: 8, paddingVertical: 2, paddingRight: 8 },
   chip: {
     backgroundColor: Brand.card,
     borderRadius: 999,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 9,
     borderWidth: 1,
     borderColor: Brand.line,
   },
@@ -189,6 +203,6 @@ const styles = StyleSheet.create({
   chipText: { color: Brand.muted, fontSize: 13, fontWeight: '600' },
   chipTextActive: { color: '#fff' },
   hint: { color: Brand.muted, fontSize: 12 },
-  list: { padding: 16, paddingBottom: 40 },
+  list: { padding: 16 },
   empty: { textAlign: 'center', color: Brand.muted, marginTop: 40, fontSize: 15 },
 });

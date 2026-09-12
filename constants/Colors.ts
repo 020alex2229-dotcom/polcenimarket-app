@@ -23,6 +23,31 @@ const successBg = '#e2f6ec';
 const closed = '#b6412f';
 const closedBg = '#fbe7e2';
 
+/** Site-like soft elevation */
+export const shadow = {
+  card: {
+    shadowColor: '#182130',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.18,
+    shadowRadius: 15,
+    elevation: 6,
+  },
+  soft: {
+    shadowColor: '#182130',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+    elevation: 4,
+  },
+  glowAmber: {
+    shadowColor: '#E7A11B',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.55,
+    shadowRadius: 14,
+    elevation: 8,
+  },
+};
+
 export const Brand = {
   cream,
   card,
@@ -55,6 +80,7 @@ export const Brand = {
   softAmber: amberSoft,
   softBlue: blueSoft,
   danger: closed,
+  radius: 20,
 };
 
 export default {

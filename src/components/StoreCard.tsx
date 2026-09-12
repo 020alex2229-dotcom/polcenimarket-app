@@ -1,9 +1,10 @@
 import { Image, Linking, Pressable, StyleSheet, Text, View } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { FontAwesome5, Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import type { Store } from '@/src/data/stores';
 import { photoUrl } from '@/src/data/stores';
-import { Brand } from '@/constants/Colors';
+import { Brand, shadow } from '@/constants/Colors';
 import { formatHours, formatOpensDate, isStoreOpen } from '@/src/utils/hours';
 import { formatDistance } from '@/src/utils/geo';
 import { MaxGradient } from '@/src/components/MaxGradient';
@@ -21,26 +22,45 @@ export function StoreCard({ store, index, distanceKm, nearest }: Props) {
 
   return (
     <Pressable
-      style={({ pressed }) => [styles.card, nearest && styles.nearest, pressed && styles.pressed]}
+      style={({ pressed }) => [
+        styles.card,
+        shadow.card,
+        nearest && styles.nearest,
+        pressed && styles.pressed,
+      ]}
       onPress={() => router.push(`/store/${index}`)}
     >
-      <Image source={{ uri: photoUrl(store.img) }} style={styles.photo} />
-      {nearest ? (
-        <View style={styles.nearestBadge}>
-          <Ionicons name="star" size={12} color={Brand.amberInk} />
-          <Text style={styles.nearestBadgeText}>Ближайший</Text>
-        </View>
-      ) : null}
-      <View style={styles.body}>
-        <View style={styles.row}>
-          <Text style={styles.city}>{store.city}</Text>
-          <View style={[styles.badge, open ? styles.openBadge : styles.closedBadge]}>
-            <Text style={[styles.badgeText, open ? styles.openText : styles.closedText]}>
-              {open ? 'Открыто' : 'Закрыто'}
-            </Text>
+      <View style={styles.photoWrap}>
+        <Image source={{ uri: photoUrl(store.img) }} style={styles.photo} />
+        <LinearGradient
+          colors={['transparent', 'rgba(16,28,51,0.55)', 'rgba(16,28,51,0.92)']}
+          locations={[0.35, 0.7, 1]}
+          style={styles.photoGrad}
+        >
+          <Text style={styles.photoCity} numberOfLines={1}>
+            {store.city}
+          </Text>
+          <Text style={styles.photoAddr} numberOfLines={1}>
+            {store.addr}
+          </Text>
+        </LinearGradient>
+
+        {nearest ? (
+          <View style={[styles.nearestBadge, shadow.glowAmber]}>
+            <Ionicons name="star" size={12} color={Brand.amberInk} />
+            <Text style={styles.nearestBadgeText}>Ближайший</Text>
           </View>
+        ) : null}
+
+        <View style={[styles.glassBadge, open ? styles.glassOpen : styles.glassClosed]}>
+          <View style={[styles.dot, open ? styles.dotOpen : styles.dotClosed]} />
+          <Text style={[styles.glassText, open ? styles.openText : styles.closedText]}>
+            {open ? 'Открыто' : 'Закрыто'}
+          </Text>
         </View>
-        <Text style={styles.addr}>{store.addr}</Text>
+      </View>
+
+      <View style={styles.body}>
         {store.note ? <Text style={styles.note}>{store.note}</Text> : null}
         <Text style={styles.hours}>{formatHours(store)}</Text>
         {typeof distanceKm === 'number' ? (
@@ -57,9 +77,7 @@ export function StoreCard({ store, index, distanceKm, nearest }: Props) {
               <Text style={styles.tagFreshText}>Фреш</Text>
             </View>
           ) : null}
-          {opensLabel ? (
-            <Text style={styles.opens}>с {opensLabel}</Text>
-          ) : null}
+          {opensLabel ? <Text style={styles.opens}>с {opensLabel}</Text> : null}
         </View>
         <View style={styles.actions}>
           <Pressable
@@ -103,18 +121,30 @@ export function StoreCard({ store, index, distanceKm, nearest }: Props) {
 const styles = StyleSheet.create({
   card: {
     backgroundColor: Brand.card,
-    borderRadius: 16,
+    borderRadius: Brand.radius,
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: Brand.line,
-    marginBottom: 14,
+    marginBottom: 16,
   },
   nearest: {
     borderColor: Brand.amber,
     borderWidth: 2,
   },
-  pressed: { opacity: 0.92 },
-  photo: { width: '100%', height: 160, backgroundColor: Brand.blueSoft },
+  pressed: { transform: [{ scale: 0.985 }], opacity: 0.97 },
+  photoWrap: { position: 'relative' },
+  photo: { width: '100%', height: 200, backgroundColor: Brand.blueSoft },
+  photoGrad: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    paddingHorizontal: 14,
+    paddingTop: 40,
+    paddingBottom: 14,
+  },
+  photoCity: { color: '#fff', fontSize: 20, fontWeight: '800' },
+  photoAddr: { color: 'rgba(255,255,255,0.88)', fontSize: 14, marginTop: 2 },
   nearestBadge: {
     position: 'absolute',
     top: 12,
@@ -125,39 +155,62 @@ const styles = StyleSheet.create({
     gap: 4,
     backgroundColor: Brand.amber,
     paddingHorizontal: 10,
-    paddingVertical: 5,
+    paddingVertical: 6,
     borderRadius: 999,
   },
   nearestBadgeText: { color: Brand.amberInk, fontWeight: '800', fontSize: 12 },
+  glassBadge: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    zIndex: 2,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 999,
+    borderWidth: 1,
+    backgroundColor: 'rgba(255,255,255,0.82)',
+  },
+  glassOpen: { borderColor: 'rgba(31,138,90,0.25)' },
+  glassClosed: { borderColor: 'rgba(182,65,47,0.25)' },
+  glassText: { fontSize: 12, fontWeight: '700' },
+  dot: { width: 7, height: 7, borderRadius: 4 },
+  dotOpen: { backgroundColor: Brand.success },
+  dotClosed: { backgroundColor: Brand.closed },
+  openText: { color: Brand.success },
+  closedText: { color: Brand.closed },
   body: { padding: 14, gap: 4 },
-  row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  city: { fontSize: 18, fontWeight: '700', color: Brand.ink, flex: 1 },
-  addr: { fontSize: 15, color: Brand.ink },
   note: { fontSize: 13, color: Brand.muted, fontStyle: 'italic' },
   hours: { fontSize: 13, color: Brand.muted, marginTop: 2 },
   distance: { fontSize: 13, color: Brand.amberDark, fontWeight: '700' },
-  badge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 999 },
-  openBadge: { backgroundColor: Brand.successBg },
-  closedBadge: { backgroundColor: Brand.closedBg },
-  badgeText: { fontSize: 12, fontWeight: '700' },
-  openText: { color: Brand.success },
-  closedText: { color: Brand.closed },
   tags: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 4, flexWrap: 'wrap' },
-  tagNew: { backgroundColor: Brand.amberSoft, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 },
+  tagNew: {
+    backgroundColor: Brand.amberSoft,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 999,
+  },
   tagNewText: { color: Brand.amberDark, fontWeight: '700', fontSize: 12 },
-  tagFresh: { backgroundColor: Brand.successBg, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 },
+  tagFresh: {
+    backgroundColor: Brand.successBg,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 999,
+  },
   tagFreshText: { color: Brand.success, fontWeight: '700', fontSize: 12 },
   opens: { fontSize: 12, color: Brand.muted },
-  actions: { flexDirection: 'row', gap: 8, marginTop: 10 },
-  btnFlex: { flex: 1, borderRadius: 10, overflow: 'hidden' },
+  actions: { flexDirection: 'row', gap: 8, marginTop: 12 },
+  btnFlex: { flex: 1, borderRadius: 12, overflow: 'hidden' },
   btn: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
-    paddingVertical: 10,
-    borderRadius: 10,
+    paddingVertical: 11,
+    borderRadius: 12,
   },
   tg: { backgroundColor: Brand.tg },
   map: { backgroundColor: Brand.terra },
