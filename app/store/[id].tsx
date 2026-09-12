@@ -4,6 +4,7 @@ import { FontAwesome5, Ionicons } from '@expo/vector-icons';
 import { Brand } from '@/constants/Colors';
 import { STORES, photoUrl } from '@/src/data/stores';
 import { formatHours, formatOpensDate, isStoreOpen } from '@/src/utils/hours';
+import { MaxGradient } from '@/src/components/MaxGradient';
 
 export default function StoreDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -71,13 +72,15 @@ export default function StoreDetailScreen() {
         <Ionicons name="open-outline" size={18} color="#fff" />
       </Pressable>
 
-      <Pressable style={[styles.btn, styles.max]} onPress={() => Linking.openURL(store.max)}>
-        <Ionicons name="chatbubbles" size={18} color="#fff" />
-        <View style={{ flex: 1 }}>
-          <Text style={styles.btnTitle}>MAX этого магазина</Text>
-          <Text style={styles.btnSub}>Группа только для {store.city}</Text>
-        </View>
-        <Ionicons name="open-outline" size={18} color="#fff" />
+      <Pressable onPress={() => Linking.openURL(store.max)} style={styles.btnWrap}>
+        <MaxGradient style={styles.maxBtn}>
+          <Ionicons name="chatbubbles" size={18} color="#fff" />
+          <View style={{ flex: 1 }}>
+            <Text style={styles.btnTitle}>MAX этого магазина</Text>
+            <Text style={styles.btnSub}>Группа только для {store.city}</Text>
+          </View>
+          <Ionicons name="open-outline" size={18} color="#fff" />
+        </MaxGradient>
       </Pressable>
 
       <Pressable style={[styles.btn, styles.map]} onPress={() => Linking.openURL(store.map)}>
@@ -97,7 +100,7 @@ const styles = StyleSheet.create({
   content: { paddingBottom: 40 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: Brand.cream },
   missing: { color: Brand.muted, fontSize: 16 },
-  photo: { width: '100%', height: 220, backgroundColor: Brand.softBlue },
+  photo: { width: '100%', height: 220, backgroundColor: Brand.blueSoft },
   city: { fontSize: 26, fontWeight: '800', color: Brand.ink, marginTop: 16, paddingHorizontal: 16 },
   addr: { fontSize: 17, color: Brand.ink, marginTop: 4, paddingHorizontal: 16 },
   note: { fontSize: 14, color: Brand.muted, fontStyle: 'italic', marginTop: 4, paddingHorizontal: 16 },
@@ -109,11 +112,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   badge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999 },
-  openBadge: { backgroundColor: '#E3F6EC' },
-  closedBadge: { backgroundColor: '#FCE8E6' },
+  openBadge: { backgroundColor: Brand.successBg },
+  closedBadge: { backgroundColor: Brand.closedBg },
   badgeText: { fontSize: 13, fontWeight: '700' },
   openText: { color: Brand.success },
-  closedText: { color: Brand.danger },
+  closedText: { color: Brand.closed },
   hours: { color: Brand.muted, fontSize: 14 },
   tags: {
     flexDirection: 'row',
@@ -123,15 +126,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     alignItems: 'center',
   },
-  tagNew: { backgroundColor: Brand.softAmber, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 },
+  tagNew: { backgroundColor: Brand.amberSoft, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 },
   tagNewText: { color: Brand.amberDark, fontWeight: '700', fontSize: 12 },
-  tagFresh: { backgroundColor: '#E3F6EC', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 },
+  tagFresh: { backgroundColor: Brand.successBg, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 },
   tagFreshText: { color: Brand.success, fontWeight: '700', fontSize: 12 },
   opens: { color: Brand.muted, fontSize: 12 },
   warn: {
     marginTop: 16,
     marginHorizontal: 16,
-    backgroundColor: Brand.softAmber,
+    backgroundColor: Brand.amberSoft,
     borderRadius: 12,
     padding: 12,
     flexDirection: 'row',
@@ -146,6 +149,7 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: Brand.ink,
   },
+  btnWrap: { marginHorizontal: 16, marginBottom: 10, borderRadius: 14, overflow: 'hidden' },
   btn: {
     marginHorizontal: 16,
     marginBottom: 10,
@@ -155,9 +159,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
   },
-  tg: { backgroundColor: Brand.telegram },
-  max: { backgroundColor: Brand.blue },
-  map: { backgroundColor: Brand.amberDark },
+  maxBtn: {
+    borderRadius: 14,
+    padding: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  tg: { backgroundColor: Brand.tg },
+  map: { backgroundColor: Brand.terra },
   btnTitle: { color: '#fff', fontWeight: '800', fontSize: 15 },
   btnSub: { color: 'rgba(255,255,255,0.85)', fontSize: 12, marginTop: 2 },
 });

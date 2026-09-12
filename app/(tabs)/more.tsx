@@ -2,6 +2,7 @@ import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-na
 import { Ionicons } from '@expo/vector-icons';
 import { Brand } from '@/constants/Colors';
 import { NETWORK, STORES } from '@/src/data/stores';
+import { MaxGradient } from '@/src/components/MaxGradient';
 
 export default function MoreScreen() {
   const cities = new Set(STORES.map((s) => s.city)).size;
@@ -22,9 +23,9 @@ export default function MoreScreen() {
       </Pressable>
 
       <Pressable style={styles.row} onPress={() => Linking.openURL(NETWORK.maxChannel)}>
-        <View style={styles.icon}>
-          <Ionicons name="chatbubbles" size={22} color={Brand.blue} />
-        </View>
+        <MaxGradient style={styles.maxIcon}>
+          <Ionicons name="chatbubbles" size={22} color="#fff" />
+        </MaxGradient>
         <View style={{ flex: 1 }}>
           <Text style={styles.rowTitle}>Канал сети в MAX</Text>
           <Text style={styles.rowSub}>Лучшие предложения со всех магазинов</Text>
@@ -58,18 +59,25 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    backgroundColor: '#fff',
+    backgroundColor: Brand.card,
     borderRadius: 14,
     padding: 14,
     borderWidth: 1,
-    borderColor: Brand.border,
+    borderColor: Brand.line,
     marginBottom: 10,
   },
   icon: {
     width: 42,
     height: 42,
     borderRadius: 12,
-    backgroundColor: Brand.softBlue,
+    backgroundColor: Brand.blueSoft,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  maxIcon: {
+    width: 42,
+    height: 42,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -77,11 +85,11 @@ const styles = StyleSheet.create({
   rowSub: { color: Brand.muted, fontSize: 12, marginTop: 2 },
   about: {
     marginTop: 10,
-    backgroundColor: '#fff',
+    backgroundColor: Brand.card,
     borderRadius: 14,
     padding: 16,
     borderWidth: 1,
-    borderColor: Brand.border,
+    borderColor: Brand.line,
   },
   aboutTitle: { fontWeight: '800', fontSize: 17, color: Brand.ink, marginBottom: 8 },
   aboutBody: { color: Brand.ink, fontSize: 14, lineHeight: 21, marginBottom: 8 },

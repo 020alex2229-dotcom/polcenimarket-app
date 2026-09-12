@@ -8,14 +8,15 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: Brand.amberDark,
-        tabBarInactiveTintColor: '#8A93A3',
+        tabBarInactiveTintColor: Brand.muted,
         tabBarStyle: {
-          backgroundColor: '#fff',
-          borderTopColor: Brand.border,
+          backgroundColor: Brand.card,
+          borderTopColor: Brand.line,
         },
         headerStyle: { backgroundColor: Brand.cream },
         headerTintColor: Brand.ink,
-        headerTitleStyle: { fontWeight: '700' },
+        headerTitleStyle: { fontWeight: '700', color: Brand.ink },
+        headerShadowVisible: false,
         headerShown: useClientOnlyValue(false, true),
       }}
     >

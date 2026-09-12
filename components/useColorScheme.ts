@@ -1,6 +1,4 @@
-import { useColorScheme as useColorSchemeCore } from 'react-native';
-
-export const useColorScheme = () => {
-  const coreScheme = useColorSchemeCore();
-  return coreScheme === 'unspecified' ? 'light' : coreScheme;
-};
+/** Brand UI is cream/light — always force light, matching userInterfaceStyle. */
+export function useColorScheme(): 'light' {
+  return 'light';
+}

@@ -28,14 +28,14 @@ export default function HowScreen() {
       <Text style={styles.or}>или</Text>
 
       <View style={styles.card}>
-        <View style={[styles.iconWrap, { backgroundColor: Brand.softBlue }]}>
+        <View style={[styles.iconWrap, { backgroundColor: Brand.blueSoft }]}>
           <Ionicons name="camera-outline" size={28} color={Brand.blue} />
         </View>
         <Text style={styles.cardTitle}>Штрихкода нет или не считывается</Text>
         <Text style={styles.cardBody}>
           Ищем товар по фото на Wildberries с доставкой до 5 дней!
         </Text>
-        <View style={[styles.pill, { backgroundColor: Brand.softBlue }]}>
+        <View style={[styles.pill, { backgroundColor: Brand.blueSoft }]}>
           <Text style={[styles.pillText, { color: Brand.blue }]}>WB → поиск по фото</Text>
         </View>
       </View>
@@ -57,17 +57,17 @@ const styles = StyleSheet.create({
   title: { fontSize: 24, fontWeight: '800', color: Brand.ink, marginBottom: 8 },
   lead: { fontSize: 15, color: Brand.muted, lineHeight: 22, marginBottom: 18 },
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: Brand.card,
     borderRadius: 16,
     padding: 16,
     borderWidth: 1,
-    borderColor: Brand.border,
+    borderColor: Brand.line,
   },
   iconWrap: {
     width: 48,
     height: 48,
     borderRadius: 12,
-    backgroundColor: Brand.softAmber,
+    backgroundColor: Brand.amberSoft,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 10,
@@ -77,7 +77,7 @@ const styles = StyleSheet.create({
   pill: {
     alignSelf: 'flex-start',
     marginTop: 12,
-    backgroundColor: Brand.softAmber,
+    backgroundColor: Brand.amberSoft,
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 8,
@@ -93,7 +93,7 @@ const styles = StyleSheet.create({
     marginTop: 18,
     flexDirection: 'row',
     gap: 10,
-    backgroundColor: Brand.softBlue,
+    backgroundColor: Brand.blueSoft,
     borderRadius: 12,
     padding: 14,
   },

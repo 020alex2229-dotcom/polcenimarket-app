@@ -6,23 +6,31 @@ import { photoUrl } from '@/src/data/stores';
 import { Brand } from '@/constants/Colors';
 import { formatHours, formatOpensDate, isStoreOpen } from '@/src/utils/hours';
 import { formatDistance } from '@/src/utils/geo';
+import { MaxGradient } from '@/src/components/MaxGradient';
 
 type Props = {
   store: Store;
   index: number;
   distanceKm?: number;
+  nearest?: boolean;
 };
 
-export function StoreCard({ store, index, distanceKm }: Props) {
+export function StoreCard({ store, index, distanceKm, nearest }: Props) {
   const open = isStoreOpen(store);
   const opensLabel = formatOpensDate(store.opens);
 
   return (
     <Pressable
-      style={({ pressed }) => [styles.card, pressed && styles.pressed]}
+      style={({ pressed }) => [styles.card, nearest && styles.nearest, pressed && styles.pressed]}
       onPress={() => router.push(`/store/${index}`)}
     >
       <Image source={{ uri: photoUrl(store.img) }} style={styles.photo} />
+      {nearest ? (
+        <View style={styles.nearestBadge}>
+          <Ionicons name="star" size={12} color={Brand.amberInk} />
+          <Text style={styles.nearestBadgeText}>Ближайший</Text>
+        </View>
+      ) : null}
       <View style={styles.body}>
         <View style={styles.row}>
           <Text style={styles.city}>{store.city}</Text>
@@ -65,14 +73,16 @@ export function StoreCard({ store, index, distanceKm }: Props) {
             <Text style={styles.btnText}>Telegram</Text>
           </Pressable>
           <Pressable
-            style={[styles.btn, styles.max]}
             onPress={(e) => {
               e.stopPropagation?.();
               Linking.openURL(store.max);
             }}
+            style={styles.btnFlex}
           >
-            <Ionicons name="chatbubbles" size={14} color="#fff" />
-            <Text style={styles.btnText}>MAX</Text>
+            <MaxGradient style={styles.btn}>
+              <Ionicons name="chatbubbles" size={14} color="#fff" />
+              <Text style={styles.btnText}>MAX</Text>
+            </MaxGradient>
           </Pressable>
           <Pressable
             style={[styles.btn, styles.map]}
@@ -96,31 +106,50 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: Brand.border,
+    borderColor: Brand.line,
     marginBottom: 14,
   },
+  nearest: {
+    borderColor: Brand.amber,
+    borderWidth: 2,
+  },
   pressed: { opacity: 0.92 },
-  photo: { width: '100%', height: 160, backgroundColor: Brand.softBlue },
+  photo: { width: '100%', height: 160, backgroundColor: Brand.blueSoft },
+  nearestBadge: {
+    position: 'absolute',
+    top: 12,
+    left: 12,
+    zIndex: 2,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: Brand.amber,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 999,
+  },
+  nearestBadgeText: { color: Brand.amberInk, fontWeight: '800', fontSize: 12 },
   body: { padding: 14, gap: 4 },
   row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   city: { fontSize: 18, fontWeight: '700', color: Brand.ink, flex: 1 },
   addr: { fontSize: 15, color: Brand.ink },
   note: { fontSize: 13, color: Brand.muted, fontStyle: 'italic' },
   hours: { fontSize: 13, color: Brand.muted, marginTop: 2 },
-  distance: { fontSize: 13, color: Brand.blue, fontWeight: '600' },
+  distance: { fontSize: 13, color: Brand.amberDark, fontWeight: '700' },
   badge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 999 },
-  openBadge: { backgroundColor: '#E3F6EC' },
-  closedBadge: { backgroundColor: '#FCE8E6' },
+  openBadge: { backgroundColor: Brand.successBg },
+  closedBadge: { backgroundColor: Brand.closedBg },
   badgeText: { fontSize: 12, fontWeight: '700' },
   openText: { color: Brand.success },
-  closedText: { color: Brand.danger },
+  closedText: { color: Brand.closed },
   tags: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 4, flexWrap: 'wrap' },
-  tagNew: { backgroundColor: Brand.softAmber, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 },
+  tagNew: { backgroundColor: Brand.amberSoft, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 },
   tagNewText: { color: Brand.amberDark, fontWeight: '700', fontSize: 12 },
-  tagFresh: { backgroundColor: '#E3F6EC', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 },
+  tagFresh: { backgroundColor: Brand.successBg, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 },
   tagFreshText: { color: Brand.success, fontWeight: '700', fontSize: 12 },
   opens: { fontSize: 12, color: Brand.muted },
   actions: { flexDirection: 'row', gap: 8, marginTop: 10 },
+  btnFlex: { flex: 1, borderRadius: 10, overflow: 'hidden' },
   btn: {
     flex: 1,
     flexDirection: 'row',
@@ -130,8 +159,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 10,
   },
-  tg: { backgroundColor: Brand.telegram },
-  max: { backgroundColor: Brand.blue },
-  map: { backgroundColor: Brand.amberDark },
+  tg: { backgroundColor: Brand.tg },
+  map: { backgroundColor: Brand.terra },
   btnText: { color: '#fff', fontWeight: '700', fontSize: 12 },
 });

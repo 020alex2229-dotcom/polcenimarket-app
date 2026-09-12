@@ -86,7 +86,7 @@ export default function StoresScreen() {
           <TextInput
             style={styles.input}
             placeholder="Город или улица…"
-            placeholderTextColor="#9AA3B2"
+            placeholderTextColor={Brand.muted}
             value={query}
             onChangeText={setQuery}
           />
@@ -136,12 +136,13 @@ export default function StoresScreen() {
             Ничего не нашли. Попробуйте другой город или сбросьте фильтр.
           </Text>
         ) : (
-          filtered.map(({ store, index }) => (
+          filtered.map(({ store, index }, i) => (
             <StoreCard
               key={`${store.city}-${store.addr}`}
               store={store}
               index={index}
               distanceKm={coords ? distances[index] : undefined}
+              nearest={Boolean(sortingNear && coords && i === 0)}
             />
           ))
         )}
@@ -157,10 +158,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: '#fff',
+    backgroundColor: Brand.card,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: Brand.border,
+    borderColor: Brand.line,
     paddingHorizontal: 12,
     paddingVertical: 10,
   },
@@ -177,16 +178,16 @@ const styles = StyleSheet.create({
   nearText: { color: '#fff', fontWeight: '800' },
   chips: { gap: 8, paddingVertical: 2 },
   chip: {
-    backgroundColor: '#fff',
+    backgroundColor: Brand.card,
     borderRadius: 999,
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderWidth: 1,
-    borderColor: Brand.border,
+    borderColor: Brand.line,
   },
-  chipActive: { backgroundColor: Brand.softAmber, borderColor: Brand.amber },
-  chipText: { color: Brand.ink, fontSize: 13, fontWeight: '600' },
-  chipTextActive: { color: Brand.amberDark },
+  chipActive: { backgroundColor: Brand.blue, borderColor: Brand.blue },
+  chipText: { color: Brand.muted, fontSize: 13, fontWeight: '600' },
+  chipTextActive: { color: '#fff' },
   hint: { color: Brand.muted, fontSize: 12 },
   list: { padding: 16, paddingBottom: 40 },
   empty: { textAlign: 'center', color: Brand.muted, marginTop: 40, fontSize: 15 },
