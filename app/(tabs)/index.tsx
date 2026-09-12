@@ -1,10 +1,12 @@
-import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Brand } from '@/constants/Colors';
 import { NETWORK, STORES } from '@/src/data/stores';
 import { MaxGradient } from '@/src/components/MaxGradient';
+
+const brandMark = require('../../assets/images/brand-mark.png');
 
 const CATEGORIES = [
   { emoji: '🛋️', title: 'Мебель', subtitle: 'для дома и дачи', accent: 'amber' as const },
@@ -22,7 +24,10 @@ export default function HomeScreen() {
         end={{ x: 1, y: 1 }}
         style={styles.hero}
       >
-        <Text style={styles.brand}>ПолЦены Маркет</Text>
+        <View style={styles.brandRow}>
+          <Image source={brandMark} style={styles.brandLogo} accessibilityLabel="Логотип ПолЦены Маркет" />
+          <Text style={styles.brand}>ПолЦены Маркет</Text>
+        </View>
         <Text style={styles.heroTitle}>
           {'Товары с маркетплейсов\nпо скидке '}
           <Text style={styles.heroAccent}>−50%</Text>
@@ -99,6 +104,18 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 20,
     marginBottom: 20,
+  },
+  brandRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  brandLogo: {
+    width: 44,
+    height: 44,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.18)',
   },
   brand: {
     color: Brand.amber,

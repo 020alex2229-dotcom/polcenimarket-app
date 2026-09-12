@@ -1,15 +1,20 @@
-import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Brand } from '@/constants/Colors';
 import { NETWORK, STORES } from '@/src/data/stores';
 import { MaxGradient } from '@/src/components/MaxGradient';
+
+const brandMark = require('../../assets/images/brand-mark.png');
 
 export default function MoreScreen() {
   const cities = new Set(STORES.map((s) => s.city)).size;
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>Ещё</Text>
+      <View style={styles.titleRow}>
+        <Image source={brandMark} style={styles.titleMark} accessibilityLabel="Логотип ПолЦены Маркет" />
+        <Text style={styles.title}>Ещё</Text>
+      </View>
 
       <Pressable style={styles.row} onPress={() => Linking.openURL(NETWORK.website)}>
         <View style={styles.icon}>
@@ -34,7 +39,10 @@ export default function MoreScreen() {
       </Pressable>
 
       <View style={styles.about}>
-        <Text style={styles.aboutTitle}>О сети</Text>
+        <View style={styles.aboutHeader}>
+          <Image source={brandMark} style={styles.aboutMark} accessibilityLabel="Логотип" />
+          <Text style={styles.aboutTitle}>О сети</Text>
+        </View>
         <Text style={styles.aboutBody}>
           ПолЦены Маркет — магазины товаров с маркетплейсов со скидкой −50% в
           Краснодарском крае и Республике Адыгея.
@@ -46,7 +54,10 @@ export default function MoreScreen() {
         </Text>
       </View>
 
-      <Text style={styles.footer}>ПолЦены Маркет · v1.0.0</Text>
+      <View style={styles.footerRow}>
+        <Image source={brandMark} style={styles.footerMark} />
+        <Text style={styles.footer}>ПолЦены Маркет · v1.0.0</Text>
+      </View>
     </ScrollView>
   );
 }
@@ -54,7 +65,18 @@ export default function MoreScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: Brand.cream },
   content: { padding: 16, paddingBottom: 40 },
-  title: { fontSize: 24, fontWeight: '800', color: Brand.ink, marginBottom: 14 },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 14,
+  },
+  titleMark: {
+    width: 36,
+    height: 36,
+    borderRadius: 8,
+  },
+  title: { fontSize: 24, fontWeight: '800', color: Brand.ink },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -91,7 +113,30 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Brand.line,
   },
-  aboutTitle: { fontWeight: '800', fontSize: 17, color: Brand.ink, marginBottom: 8 },
+  aboutHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 8,
+  },
+  aboutMark: {
+    width: 32,
+    height: 32,
+    borderRadius: 7,
+  },
+  aboutTitle: { fontWeight: '800', fontSize: 17, color: Brand.ink },
   aboutBody: { color: Brand.ink, fontSize: 14, lineHeight: 21, marginBottom: 8 },
-  footer: { textAlign: 'center', color: Brand.muted, marginTop: 24, fontSize: 12 },
+  footerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    marginTop: 24,
+  },
+  footerMark: {
+    width: 20,
+    height: 20,
+    borderRadius: 4,
+  },
+  footer: { textAlign: 'center', color: Brand.muted, fontSize: 12 },
 });
