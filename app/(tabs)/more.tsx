@@ -1,5 +1,8 @@
 import { Image, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import Constants from 'expo-constants';
+import { router } from 'expo-router';
+import { useOwner } from '@/src/state/owner';
 import { Ionicons } from '@expo/vector-icons';
 import { Brand, shadow } from '@/constants/Colors';
 import { NETWORK, STORES } from '@/src/data/stores';
@@ -10,6 +13,8 @@ const logoMark = require('../../assets/images/logo-mark.png');
 
 export default function MoreScreen() {
   const cities = new Set(STORES.map((s) => s.city)).size;
+  const { unlocked } = useOwner();
+  const version = Constants.expoConfig?.version ?? '1.1.0';
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
@@ -82,10 +87,31 @@ export default function MoreScreen() {
         </View>
       </View>
 
-      <View style={styles.footerRow}>
+      {unlocked ? (
+        <Pressable
+          style={({ pressed }) => [styles.row, shadow.soft, { marginTop: 14 }, pressed && styles.rowPressed]}
+          onPress={() => router.push('/owner')}
+        >
+          <View style={[styles.icon, { backgroundColor: Brand.amberSoft }]}>
+            <Ionicons name="key" size={22} color={Brand.amberDark} />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.rowTitle}>Режим владельца включён</Text>
+            <Text style={styles.rowSub}>Каталог виден только на этом телефоне</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color={Brand.muted} />
+        </Pressable>
+      ) : null}
+
+      <Pressable
+        style={styles.footerRow}
+        onLongPress={() => router.push('/owner')}
+        delayLongPress={1500}
+        accessibilityLabel={`Версия ${version}`}
+      >
         <Image source={brandMark} style={styles.footerMark} />
-        <Text style={styles.footer}>ПолЦены Маркет · v1.0.0</Text>
-      </View>
+        <Text style={styles.footer}>ПолЦены Маркет · v{version}</Text>
+      </Pressable>
     </ScrollView>
   );
 }

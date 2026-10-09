@@ -1,15 +1,19 @@
 import { Image, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { FontAwesome5, Ionicons } from '@expo/vector-icons';
 import { Brand, shadow } from '@/constants/Colors';
-import { STORES, photoUrl } from '@/src/data/stores';
+import { photoUrl } from '@/src/data/stores';
+import { useStores } from '@/src/data/useStores';
+import { useOwner } from '@/src/state/owner';
 import { formatHours, formatOpensDate, isStoreOpen } from '@/src/utils/hours';
 import { MaxGradient } from '@/src/components/MaxGradient';
 
 export default function StoreDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const index = Number(id);
+  const STORES = useStores();
+  const { unlocked, selectStore } = useOwner();
   const store = Number.isFinite(index) ? STORES[index] : undefined;
 
   if (!store) {
@@ -71,8 +75,26 @@ export default function StoreDetailScreen() {
           </Text>
         </View>
 
+        {unlocked && store.catalogId ? (
+          <Pressable
+            style={({ pressed }) => [styles.catBtn, shadow.card, pressed && { opacity: 0.9 }]}
+            onPress={() => {
+              selectStore(store.catalogId!);
+              router.navigate('/catalog');
+            }}
+          >
+            <Text style={styles.catEmoji}>🛍</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.catTitle}>Каталог этого магазина</Text>
+              <Text style={styles.catSub}>Новинки дня и все товары за 48 часов</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={22} color={Brand.ink} />
+          </Pressable>
+        ) : null}
+
         <Text style={styles.section}>Чат именно этого магазина</Text>
 
+        {store.tg ? (
         <Pressable
           style={[styles.btn, styles.tg, shadow.soft]}
           onPress={() => Linking.openURL(store.tg)}
@@ -86,6 +108,7 @@ export default function StoreDetailScreen() {
           </View>
           <Ionicons name="open-outline" size={18} color="#fff" />
         </Pressable>
+        ) : null}
 
         <Pressable onPress={() => Linking.openURL(store.max)} style={[styles.btnWrap, shadow.soft]}>
           <MaxGradient style={styles.maxBtn}>
@@ -208,6 +231,20 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: Brand.ink,
   },
+  catBtn: {
+    marginTop: 18,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: '#FFF3A6',
+    borderWidth: 2,
+    borderColor: '#EF1F2F',
+    borderRadius: Brand.radius,
+    padding: 16,
+  },
+  catEmoji: { fontSize: 30 },
+  catTitle: { fontSize: 17, fontWeight: '900', color: Brand.ink },
+  catSub: { fontSize: 13, color: Brand.muted, marginTop: 2 },
   btnWrap: { marginBottom: 12, borderRadius: Brand.radius, overflow: 'hidden' },
   btn: {
     marginBottom: 12,

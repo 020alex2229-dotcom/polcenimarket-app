@@ -80,16 +80,18 @@ export function StoreCard({ store, index, distanceKm, nearest }: Props) {
           {opensLabel ? <Text style={styles.opens}>с {opensLabel}</Text> : null}
         </View>
         <View style={styles.actions}>
-          <Pressable
-            style={[styles.btn, styles.tg]}
-            onPress={(e) => {
-              e.stopPropagation?.();
-              Linking.openURL(store.tg);
-            }}
-          >
-            <FontAwesome5 name="telegram-plane" size={14} color="#fff" />
-            <Text style={styles.btnText}>Telegram</Text>
-          </Pressable>
+          {store.tg ? (
+            <Pressable
+              style={[styles.btn, styles.tg]}
+              onPress={(e) => {
+                e.stopPropagation?.();
+                Linking.openURL(store.tg);
+              }}
+            >
+              <FontAwesome5 name="telegram-plane" size={14} color="#fff" />
+              <Text style={styles.btnText}>Telegram</Text>
+            </Pressable>
+          ) : null}
           <Pressable
             onPress={(e) => {
               e.stopPropagation?.();

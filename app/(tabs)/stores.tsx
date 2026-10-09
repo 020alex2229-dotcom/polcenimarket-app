@@ -13,14 +13,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
 import { Ionicons } from '@expo/vector-icons';
 import { Brand, shadow } from '@/constants/Colors';
-import { STORES } from '@/src/data/stores';
+import { useStores } from '@/src/data/useStores';
 import { StoreCard } from '@/src/components/StoreCard';
 import { haversineKm } from '@/src/utils/geo';
 
-const CITIES = Array.from(new Set(STORES.map((s) => s.city)));
-
 export default function StoresScreen() {
   const insets = useSafeAreaInsets();
+  const STORES = useStores();
+  const CITIES = useMemo(() => Array.from(new Set(STORES.map((s) => s.city))), [STORES]);
   const [query, setQuery] = useState('');
   const [city, setCity] = useState<string | null>(null);
   const [coords, setCoords] = useState<{ lat: number; lon: number } | null>(null);
@@ -31,10 +31,10 @@ export default function StoresScreen() {
     if (!coords) return {} as Record<number, number>;
     const map: Record<number, number> = {};
     STORES.forEach((s, i) => {
-      map[i] = haversineKm(coords.lat, coords.lon, s.lat, s.lon);
+      if (Number.isFinite(s.lat)) map[i] = haversineKm(coords.lat, coords.lon, s.lat, s.lon);
     });
     return map;
-  }, [coords]);
+  }, [coords, STORES]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -54,7 +54,7 @@ export default function StoresScreen() {
       );
     }
     return items;
-  }, [query, city, sortingNear, coords, distances]);
+  }, [query, city, sortingNear, coords, distances, STORES]);
 
   async function findNearby() {
     try {

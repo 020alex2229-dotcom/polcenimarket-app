@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 import { Brand } from '@/constants/Colors';
+import { OwnerProvider } from '@/src/state/owner';
 
 export { ErrorBoundary } from 'expo-router';
 
@@ -30,7 +31,7 @@ export default function RootLayout() {
   if (!loaded) return null;
 
   return (
-    <>
+    <OwnerProvider>
       <StatusBar style="dark" />
       <Stack
         screenOptions={{
@@ -45,7 +46,9 @@ export default function RootLayout() {
           name="store/[id]"
           options={{ title: 'Магазин', headerBackTitle: 'Назад' }}
         />
+        <Stack.Screen name="product/[id]" options={{ title: 'Товар', headerBackTitle: 'Назад' }} />
+        <Stack.Screen name="owner" options={{ title: 'Режим владельца', headerBackTitle: 'Назад' }} />
       </Stack>
-    </>
+    </OwnerProvider>
   );
 }

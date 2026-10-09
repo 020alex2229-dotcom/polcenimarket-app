@@ -2,12 +2,11 @@
   "expo": {
     "name": "ПолЦены Маркет",
     "slug": "polcenimarket",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "polcenimarket",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "ru.polcenimarket.app",
@@ -53,7 +52,10 @@
           "locationWhenInUsePermission": "Приложению нужен доступ к геолокации, чтобы показать магазины ПолЦены Маркет рядом с вами."
         }
       ],
-      "expo-image"
+      "expo-image",
+      "expo-secure-store",
+      "expo-build-properties",
+      "./plugins/withArmOnly"
     ],
     "experiments": {
       "typedRoutes": true
@@ -64,6 +66,14 @@
         "projectId": "2363ecc0-40ee-49af-be88-8963f0935584"
       }
     },
-    "owner": "polcenimarket"
+    "owner": "polcenimarket",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/2363ecc0-40ee-49af-be88-8963f0935584",
+      "fallbackToCacheTimeout": 0,
+      "checkAutomatically": "ON_LOAD"
+    }
   }
 }

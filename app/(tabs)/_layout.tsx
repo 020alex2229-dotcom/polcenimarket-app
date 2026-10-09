@@ -45,6 +45,16 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="catalog"
+        options={{
+          title: 'Каталог',
+          headerTitle: () => <HeaderTitle title="Каталог товаров" />,
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="bag-handle" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="stores"
         options={{
           title: 'Магазины',
