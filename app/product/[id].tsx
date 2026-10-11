@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Linking, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Image } from 'expo-image';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Brand } from '@/constants/Colors';
-import { findItem, imageUrl, sendLead, trackEvent, whenLabel } from '@/src/api/catalog';
+import { findItem, imageUrl, sendLead, trackEvent, whenLabel, type LeadResult } from '@/src/api/catalog';
 import { Cat, PriceLine } from '@/src/components/CatalogUI';
 import { useOwner } from '@/src/state/owner';
 
@@ -14,7 +14,8 @@ export default function ProductScreen() {
   const { stores } = useOwner();
   const found = id ? findItem(String(id)) : null;
   const [sending, setSending] = useState(false);
-  const [sent, setSent] = useState<string | null>(null);
+  const [sent, setSent] = useState<LeadResult | null>(null);
+  const [showVisit, setShowVisit] = useState(false);
 
   useEffect(() => {
     if (found) trackEvent('view_item', { store: found.item.store, item: found.item.id, category: found.item.cat });
@@ -35,9 +36,9 @@ export default function ProductScreen() {
   async function want() {
     setSending(true);
     try {
-      const msg = await sendLead(item.id);
-      setSent(msg);
-      Alert.alert('Готово', msg);
+      const res = await sendLead(item.id);
+      setSent(res);
+      setShowVisit(true);
     } catch (e: any) {
       Alert.alert('Не получилось', e?.message || 'Попробуйте ещё раз');
     } finally {
@@ -104,17 +105,57 @@ export default function ProductScreen() {
       <View style={[styles.bottom, { paddingBottom: 12 + insets.bottom }]}>
         <Pressable
           disabled={sending}
-          onPress={want}
+          onPress={() => (sent ? setShowVisit(true) : want())}
           style={({ pressed }) => [styles.want, (pressed || sending) && { opacity: 0.85 }, sent && styles.wantDone]}
         >
           {sending ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.wantText}>{sent ? '✓ Заявка отправлена' : 'Хочу посмотреть'}</Text>
+            <Text style={styles.wantText}>{sent ? '✓ Ждём вас в магазине' : 'Хочу посмотреть'}</Text>
           )}
         </Pressable>
       </View>
+
+      <Modal visible={showVisit && !!sent} transparent animationType="slide" onRequestClose={() => setShowVisit(false)}>
+        <Pressable style={styles.sheetBg} onPress={() => setShowVisit(false)}>
+          <Pressable style={[styles.sheet, { paddingBottom: 18 + insets.bottom }]} onPress={() => {}}>
+            <Text style={styles.sheetTitle}>✓ Ждём вас!</Text>
+            <ScrollView style={{ maxHeight: 360 }}>
+              <LinkedText text={sent?.visit ?? ''} />
+              {sent?.dm ? (
+                <Text style={styles.dmNote}>Это сообщение мы также отправили вам в чат бота «КАТАЛОГ ПолЦеныМаркет».</Text>
+              ) : null}
+            </ScrollView>
+            {store.map ? (
+              <Pressable style={styles.mapBtn} onPress={() => Linking.openURL(store.map)}>
+                <Text style={styles.mapBtnText}>📍 Как добраться</Text>
+              </Pressable>
+            ) : null}
+            <Pressable style={styles.okBtn} onPress={() => setShowVisit(false)}>
+              <Text style={styles.okBtnText}>Хорошо</Text>
+            </Pressable>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </View>
+  );
+}
+
+/** Текст сервера с кликабельными ссылками */
+function LinkedText({ text }: { text: string }) {
+  const parts = text.split(/(https?:\/\/\S+)/g);
+  return (
+    <Text style={styles.visit}>
+      {parts.map((p, i) =>
+        /^https?:\/\//.test(p) ? (
+          <Text key={i} style={styles.visitLink} onPress={() => Linking.openURL(p)}>
+            {p}
+          </Text>
+        ) : (
+          <Text key={i}>{p}</Text>
+        ),
+      )}
+    </Text>
   );
 }
 
@@ -188,5 +229,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   wantDone: { backgroundColor: Brand.success },
+  sheetBg: { flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'flex-end' },
+  sheet: { backgroundColor: '#fff', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 18, gap: 10 },
+  sheetTitle: { fontSize: 22, fontWeight: '900', color: Brand.success },
+  visit: { fontSize: 15.5, lineHeight: 23, color: Brand.ink },
+  visitLink: { color: Cat.red2, fontWeight: '800', textDecorationLine: 'underline' },
+  dmNote: { color: '#777', fontSize: 13, marginTop: 10 },
+  mapBtn: { backgroundColor: Cat.sun2, borderWidth: 2, borderColor: Cat.red, borderRadius: 14, paddingVertical: 13, alignItems: 'center' },
+  mapBtnText: { fontWeight: '900', fontSize: 16, color: Brand.ink },
+  okBtn: { backgroundColor: Cat.red, borderRadius: 14, paddingVertical: 14, alignItems: 'center' },
+  okBtnText: { color: '#fff', fontWeight: '900', fontSize: 16 },
   wantText: { color: '#fff', fontWeight: '900', fontSize: 17 },
 });

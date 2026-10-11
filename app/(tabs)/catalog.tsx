@@ -9,7 +9,6 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from 'react-native';
 import { router } from 'expo-router';
@@ -20,7 +19,6 @@ import {
   PRICE_RANGES,
   cachedCatalog,
   fetchCatalog,
-  matchesQuery,
   rememberCatalog,
   trackEvent,
   type CatalogItem,
@@ -62,7 +60,7 @@ export default function CatalogScreen() {
 
 function OwnerCatalog() {
   const insets = useSafeAreaInsets();
-  const { selectedStore, selectStore, stores, refreshStores } = useOwner();
+  const { selectedStore, selectStore, stores, refreshStores, pendingCategory, setPendingCategory } = useOwner();
   const [data, setData] = useState<StoreCatalog | null>(null);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -72,11 +70,9 @@ function OwnerCatalog() {
   const [sizePicker, setSizePicker] = useState(false);
   const [tab, setTab] = useState<'today' | 'all'>('today');
   const [cat, setCat] = useState('');
-  const [query, setQuery] = useState('');
   const [price, setPrice] = useState('');
   const [size, setSize] = useState('');
   const listRef = useRef<FlatList<CatalogItem>>(null);
-  const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const storeList = stores?.stores ?? [];
   const currentName =
@@ -87,6 +83,10 @@ function OwnerCatalog() {
       setError(null);
       if (mode === 'open') {
         setLoading(true);
+        setCat('');
+        setSize('');
+        setPrice('');
+        setTab('today');
         const cache = await cachedCatalog(store);
         if (cache) {
           setData(cache.data);
@@ -97,12 +97,7 @@ function OwnerCatalog() {
         const d = await fetchCatalog(store);
         setData(d);
         setOfflineAt(null);
-        if (mode === 'open') {
-          setCat('');
-          setSize('');
-          setPrice('');
-          if (!d.items.some((x) => x.ts >= d.today_from)) setTab('all');
-        }
+        if (mode === 'open' && !d.items.some((x) => x.ts >= d.today_from)) setTab('all');
       } catch (e: any) {
         const cache = await cachedCatalog(store);
         if (cache) {
@@ -121,6 +116,15 @@ function OwnerCatalog() {
     if (selectedStore) load(selectedStore, 'open');
     else if (stores) setPicker(true);
   }, [selectedStore, load, stores == null]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Категория с Главной: открываем «Все» с этим фильтром
+  useEffect(() => {
+    if (!pendingCategory || !data || loading) return;
+    setTab('all');
+    setCat(data.categories.some((c) => c.id === pendingCategory) ? pendingCategory : '');
+    setPendingCategory(null);
+    listRef.current?.scrollToOffset({ offset: 0, animated: false });
+  }, [pendingCategory, data, loading, setPendingCategory]);
 
   const todayPool = useMemo(
     () => (data ? data.items.filter((x) => x.ts >= data.today_from) : []),
@@ -142,10 +146,9 @@ function OwnerCatalog() {
         (!cat || x.cat === cat) &&
         x.price >= range.lo &&
         x.price < range.hi &&
-        (!size || x.size.toLowerCase() === size.toLowerCase()) &&
-        matchesQuery(x, query),
+        (!size || x.size.toLowerCase() === size.toLowerCase()),
     );
-  }, [pool, cat, price, size, query]);
+  }, [pool, cat, price, size]);
 
   const catCounts = useMemo(() => {
     const m: Record<string, number> = {};
@@ -157,23 +160,22 @@ function OwnerCatalog() {
     if (size && !sizes.includes(size)) setSize('');
   }, [sizes, size]);
 
-  const onQuery = (q: string) => {
-    setQuery(q);
-    if (searchTimer.current) clearTimeout(searchTimer.current);
-    if (q.trim() && selectedStore) {
-      searchTimer.current = setTimeout(() => {
-        trackEvent('search', { store: selectedStore, query: q.trim(), category: cat });
-      }, 1500);
-    }
-  };
-
   const scrollTop = () => listRef.current?.scrollToOffset({ offset: 0, animated: false });
 
   const header = (
     <View>
       <View style={styles.chipsRow}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
-          <Chip label="Все" count={pool.length} on={!cat} onPress={() => (setCat(''), scrollTop())} />
+          <Chip
+            label="Все"
+            count={data?.items.length ?? 0}
+            on={!cat && tab === 'all'}
+            onPress={() => {
+              setCat('');
+              setTab('all');
+              scrollTop();
+            }}
+          />
           {(data?.categories ?? [])
             .filter((c) => catCounts[c.id] || cat === c.id)
             .map((c) => (
@@ -238,9 +240,7 @@ function OwnerCatalog() {
   ) : (
     <View style={styles.empty}>
       <Text style={styles.emptyText}>
-        {query
-          ? `По запросу «${query}» ничего не нашлось.`
-          : tab === 'today'
+        {tab === 'today'
             ? 'Сегодня в этой категории новинок пока нет. Откройте «Все товары» — там всё за 48 часов.'
             : 'В этой категории пока нет товаров.'}
       </Text>
@@ -251,40 +251,19 @@ function OwnerCatalog() {
     <View style={styles.screen}>
       <View style={styles.top}>
         <StoreSelector label={currentName} onPress={() => (setPicker(true), refreshStores())} />
-        <View style={styles.searchRow}>
-          <Ionicons name="search" size={18} color={Brand.muted} />
-          <TextInput
-            value={query}
-            onChangeText={onQuery}
-            placeholder="Поиск: пылесос, куртка, кроссовки…"
-            placeholderTextColor="#9AA0A6"
-            style={styles.search}
-            returnKeyType="search"
-            autoCorrect={false}
-          />
-          {query ? (
-            <Pressable onPress={() => setQuery('')} hitSlop={10}>
-              <Ionicons name="close-circle" size={18} color={Brand.muted} />
-            </Pressable>
-          ) : null}
-        </View>
-        <View style={styles.tabs}>
-          {(['today', 'all'] as const).map((t) => (
-            <Pressable
-              key={t}
-              onPress={() => {
-                setTab(t);
-                scrollTop();
-                if (t === 'today') trackEvent('view_today', { store: selectedStore });
-              }}
-              style={[styles.tab, tab === t && styles.tabOn]}
-            >
-              <Text style={[styles.tabText, tab === t && { color: '#fff' }]}>
-                {t === 'today' ? `🔥 Новинки дня ${todayPool.length ? todayPool.length : ''}` : 'Все товары'}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
+        <Pressable
+          onPress={() => {
+            const next = tab === 'today' ? 'all' : 'today';
+            setTab(next);
+            scrollTop();
+            if (next === 'today') trackEvent('view_today', { store: selectedStore });
+          }}
+          style={[styles.tab, tab === 'today' && styles.tabOn]}
+        >
+          <Text style={[styles.tabText, tab === 'today' && { color: '#fff' }]}>
+            🔥 Новинки дня{todayPool.length ? ` ${todayPool.length}` : ''}
+          </Text>
+        </Pressable>
       </View>
 
       <FlatList
@@ -349,7 +328,6 @@ function OwnerCatalog() {
                     style={[styles.st, s.id === selectedStore && styles.stOn]}
                     onPress={() => {
                       setPicker(false);
-                      setQuery('');
                       if (s.id === selectedStore) load(s.id, 'open');
                       else selectStore(s.id);
                     }}
@@ -413,17 +391,6 @@ const styles = StyleSheet.create({
     elevation: 3,
     zIndex: 2,
   },
-  searchRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    borderWidth: 2,
-    borderColor: Cat.sunLine,
-    borderRadius: 12,
-    paddingHorizontal: 10,
-    backgroundColor: '#FFFEF8',
-  },
-  search: { flex: 1, paddingVertical: 9, fontSize: 15, color: Brand.ink },
   tabs: { flexDirection: 'row', gap: 6 },
   tab: {
     flex: 1,

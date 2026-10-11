@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Brand, shadow } from '@/constants/Colors';
 import { NETWORK, STORES, photoUrl } from '@/src/data/stores';
 import { MaxGradient } from '@/src/components/MaxGradient';
+import { HomeCategories } from '@/src/components/HomeCategories';
 
 const brandMark = require('../../assets/images/brand-mark.png');
 const logoMark = require('../../assets/images/logo-mark.png');
@@ -16,12 +17,6 @@ const FEATURES = [
   { icon: 'map' as const, label: 'Кубань и Адыгея' },
 ];
 
-const CATEGORIES = [
-  { emoji: '🛋️', title: 'Мебель', subtitle: 'для дома и дачи', accent: 'amber' as const },
-  { emoji: '📺', title: 'Техника', subtitle: 'для дома и кухни', accent: 'blue' as const },
-  { emoji: '👕', title: 'Одежда и обувь', subtitle: 'для всей семьи', accent: 'blue' as const },
-  { emoji: '🏠', title: 'Товары для дома', subtitle: 'и всё для быта', accent: 'amber' as const },
-];
 
 const PREVIEW_STORES = [4, 5, 0, 10].map((i) => ({ store: STORES[i], index: i })).filter((x) => x.store);
 
@@ -84,29 +79,7 @@ export default function HomeScreen() {
         </View>
       </LinearGradient>
 
-      <Text style={styles.sectionTitle}>Категории</Text>
-      <View style={styles.cats}>
-        {CATEGORIES.map((c) => {
-          const amber = c.accent === 'amber';
-          return (
-            <Pressable
-              key={c.title}
-              style={({ pressed }) => [
-                styles.cat,
-                amber ? styles.catAmber : styles.catBlue,
-                shadow.soft,
-                pressed && styles.catPressed,
-              ]}
-            >
-              <View style={[styles.catIcon, amber ? styles.catIconAmber : styles.catIconBlue]}>
-                <Text style={styles.catEmoji}>{c.emoji}</Text>
-              </View>
-              <Text style={styles.catTitle}>{c.title}</Text>
-              <Text style={styles.catSub}>{c.subtitle}</Text>
-            </Pressable>
-          );
-        })}
-      </View>
+      <HomeCategories />
 
       <View style={styles.sectionHead}>
         <Text style={styles.sectionTitleInline}>Магазины</Text>

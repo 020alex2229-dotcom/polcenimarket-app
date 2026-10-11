@@ -19,6 +19,9 @@ type Ctx = {
   selectStore: (id: string) => void;
   stores: StoresPayload | null;
   refreshStores: () => Promise<StoresPayload | null>;
+  /** Категория, выбранная на Главной: каталог откроется сразу с этим фильтром */
+  pendingCategory: string | null;
+  setPendingCategory: (id: string | null) => void;
 };
 
 const OwnerContext = createContext<Ctx | null>(null);
@@ -28,6 +31,7 @@ export function OwnerProvider({ children }: { children: ReactNode }) {
   const [unlocked, setUnlocked] = useState(false);
   const [selectedStore, setSelected] = useState<string | null>(null);
   const [stores, setStores] = useState<StoresPayload | null>(null);
+  const [pendingCategory, setPendingCategory] = useState<string | null>(null);
 
   const refreshStores = useCallback(async () => {
     try {
@@ -77,8 +81,8 @@ export function OwnerProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo(
-    () => ({ ready, unlocked, unlock, lock, selectedStore, selectStore, stores, refreshStores }),
-    [ready, unlocked, unlock, lock, selectedStore, selectStore, stores, refreshStores],
+    () => ({ ready, unlocked, unlock, lock, selectedStore, selectStore, stores, refreshStores, pendingCategory, setPendingCategory }),
+    [ready, unlocked, unlock, lock, selectedStore, selectStore, stores, refreshStores, pendingCategory],
   );
   return <OwnerContext.Provider value={value}>{children}</OwnerContext.Provider>;
 }

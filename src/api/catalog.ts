@@ -7,9 +7,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
 
-const FRONT = 'https://catalog.polcenimarket.ru';
-/** В веб-превью (только для скриншотов) API идёт через локальный прокси того же адреса — без CORS. */
-export const CATALOG_BASE = Platform.OS === 'web' ? '' : FRONT;
+/**
+ * Адреса того же сервиса каталога (VPS). Основной — catalog.polcenimarket.ru; запасной — прямой адрес VPS
+ * со своим сертификатом Let's Encrypt (без Cloudflare). При сетевой/TLS-ошибке переключаемся на следующий.
+ * В веб-превью (только для скриншотов) API идёт через локальный прокси — без CORS.
+ */
+const BASES = Platform.OS === 'web' ? [''] : ['https://catalog.polcenimarket.ru', 'https://94-228-163-212.sslip.io'];
+let baseIndex = 0;
+export const catalogBase = () => BASES[baseIndex];
 
 export type CatalogStore = {
   id: string;
@@ -100,13 +105,14 @@ async function fetchJson(
 ): Promise<any> {
   const tries = opts.tries ?? (opts.body ? 1 : 3);
   let lastErr: unknown = null;
-  for (let i = 0; i < tries; i++) {
+  const attempts = Math.max(tries, BASES.length);
+  for (let i = 0; i < attempts; i++) {
     const ac = new AbortController();
     const timer = setTimeout(() => ac.abort(), opts.timeout ?? 20000);
     try {
       const headers: Record<string, string> = { 'Content-Type': 'application/json', Accept: 'application/json' };
       if (opts.auth !== false && session) headers['X-Session'] = session;
-      const r = await fetch(CATALOG_BASE + path, {
+      const r = await fetch(catalogBase() + path, {
         method: opts.body ? 'POST' : 'GET',
         headers,
         body: opts.body ? JSON.stringify(opts.body) : undefined,
@@ -123,7 +129,11 @@ async function fetchJson(
       clearTimeout(timer);
       lastErr = e;
       if (e instanceof ApiError && e.status >= 400 && e.status < 500) throw e; // не сеть — повтор не поможет
-      if (i < tries - 1) await new Promise((res) => setTimeout(res, 800 * (i + 1)));
+      if (!(e instanceof ApiError) && BASES.length > 1) {
+        baseIndex = (baseIndex + 1) % BASES.length; // сеть/сертификат — пробуем другой адрес того же сервера
+        continue;
+      }
+      if (i < attempts - 1) await new Promise((res) => setTimeout(res, 800 * (i + 1)));
     }
   }
   if (lastErr instanceof ApiError) throw lastErr;
@@ -230,17 +240,53 @@ export function findItem(id: string): { item: CatalogItem; catalog: StoreCatalog
   return null;
 }
 
-export async function sendLead(itemId: string): Promise<string> {
+export type LeadResult = { visit: string; dm: boolean; duplicate: boolean };
+
+/** «Хочу посмотреть»: сервер передаёт заявку директору и возвращает текст «Приходите, пожалуйста…». */
+export async function sendLead(itemId: string): Promise<LeadResult> {
   const j = await authed('/app/api/lead', { body: { item: itemId }, timeout: 30000 });
-  return String(j.message || 'Заявка отправлена.');
+  return { visit: String(j.visit || j.message || 'Заявка отправлена.'), dm: !!j.dm, duplicate: !!j.duplicate };
 }
+
+/** Реальные категории каталога (id как на сервере) и значки для Главной. */
+export const CATEGORY_ICONS: Record<string, string> = {
+  furniture: '🛋️',
+  'women-clothing': '👗',
+  'men-clothing': '👔',
+  shoes: '👟',
+  kids: '🧸',
+  appliances: '🔌',
+  electronics: '📱',
+  kitchen: '🍳',
+  dishes: '🍽️',
+  'home-textiles': '🛏️',
+  beauty: '💄',
+  'tools-auto': '🔧',
+  household: '🧽',
+};
+
+export const DEFAULT_CATEGORIES: { id: string; name: string }[] = [
+  { id: 'furniture', name: 'Мебель' },
+  { id: 'women-clothing', name: 'Женская одежда' },
+  { id: 'men-clothing', name: 'Мужская одежда' },
+  { id: 'shoes', name: 'Обувь' },
+  { id: 'kids', name: 'Детское' },
+  { id: 'appliances', name: 'Бытовая техника' },
+  { id: 'electronics', name: 'Электроника' },
+  { id: 'kitchen', name: 'Кухня' },
+  { id: 'dishes', name: 'Посуда' },
+  { id: 'home-textiles', name: 'Дом и текстиль' },
+  { id: 'beauty', name: 'Красота и уход' },
+  { id: 'tools-auto', name: 'Инструменты и авто' },
+  { id: 'household', name: 'Хозтовары' },
+];
 
 export function trackEvent(kind: string, extra: Record<string, unknown> = {}) {
   authed('/app/api/event', { body: { kind, ...extra }, timeout: 10000 }).catch(() => {});
 }
 
 // ---------------------------------------------------------------- helpers
-export const imageUrl = (u: string) => (u && u.startsWith('/') ? CATALOG_BASE + u : u);
+export const imageUrl = (u: string) => (u && u.startsWith('/') ? catalogBase() + u : u);
 
 export const rub = (v: number) => `${Math.round(v).toLocaleString('ru-RU').replace(/[\u00a0,]/g, ' ')} ₽`;
 
